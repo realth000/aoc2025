@@ -1,4 +1,5 @@
 /src/main/resources/
+/kls_database.db
 
 .gradle
 build/

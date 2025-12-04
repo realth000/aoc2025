@@ -26,7 +26,7 @@ kotlin {
     jvmToolchain(17)
 }
 
-(1..1).forEach { day ->
+(1..2).forEach { day ->
     val dayId = String.format("%02d", day)
 
     tasks.register<JavaExec>("day$dayId") {
