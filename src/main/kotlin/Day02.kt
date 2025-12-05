@@ -1,7 +1,5 @@
 package kzs.th000
 
-import kotlin.streams.toList
-
 enum class Ordering {
     LESS,
     EQUAL,
@@ -13,15 +11,17 @@ data class IdRange(val start: String, val end: String) {
         fun parseText(data: String): IdRange {
             val parts = data.split("-").toList()
             val start = parts[0]
-            val end = parts[1]
+            val end = parts[1].trim()
             return IdRange(start, end)
         }
     }
+
+    fun acceptLength(len: Int): Boolean =
+        ((start.length)..(end.length)).toList().any { it % len == 0 }
 }
 
-fun getFirstHalf(s: String): String {
-    return s.substring(0, s.length / 2)
-}
+/** @brief Get the first N chars in string */
+fun getFirstNChars(s: String, n: Int): String = s.take(n)
 
 // Input    Output
 //     1        10
@@ -35,9 +35,12 @@ fun getFirstHalf(s: String): String {
 //  9999     10000
 // 10000    100000
 // 99999    100000
-fun generateNextLevelMinNumber(s: String): String {
-    return "1" + "0".repeat(s.length)
-}
+fun generateNextLevelMinNumber(s: Int): String =
+    if (s < 2) {
+        "1"
+    } else {
+        "1" + "0".repeat(s - 1)
+    }
 
 fun compareString(s1: String, s2: String): Ordering {
     if (s1.length < s2.length) {
@@ -46,7 +49,7 @@ fun compareString(s1: String, s2: String): Ordering {
         return Ordering.GREATER
     }
 
-    for (pos in 0..s1.length - 1) {
+    for (pos in s1.indices) {
         val c1 = s1[pos]
         val c2 = s2[pos]
         if (c1 < c2) {
@@ -59,13 +62,11 @@ fun compareString(s1: String, s2: String): Ordering {
     return Ordering.EQUAL
 }
 
-fun String.notGreaterThan(other: String): Boolean {
-    return compareString(this, other) != Ordering.GREATER
-}
+fun String.notGreaterThan(other: String): Boolean = compareString(this, other) != Ordering.GREATER
 
-fun String.notLessThan(other: String): Boolean {
-    return compareString(this, other) != Ordering.LESS
-}
+fun String.notLessThan(other: String): Boolean = compareString(this, other) != Ordering.LESS
+
+fun String.greaterThan(other: String): Boolean = compareString(this, other) == Ordering.GREATER
 
 fun safeAdd1(s: List<Char>): List<Char> {
     if (s.isEmpty()) {
@@ -79,84 +80,117 @@ fun safeAdd1(s: List<Char>): List<Char> {
             ss = safeAdd1(ss.toList()).toMutableList()
             ss.add('0')
         }
+
         else -> throw Exception("unreachable")
     }
     return ss
 }
 
+fun generateSeedWithLength(startLength: Int, minLength: Int, maxLength: Int): String? {
+    println(
+        "generateSeedWithLength: startLength: $startLength, minLength: $minLength, maxLength: $maxLength"
+    )
+    var len = startLength
+    while (true) {
+        if (len < minLength) {
+            len += 1
+            continue
+        }
+        if (len > maxLength) {
+            return null
+        }
+        val seed = "1" + "0".repeat(len - 1)
+        if (minLength % seed.length == 0) {
+            return seed
+        }
+        len += 1
+    }
+}
+
 fun solvePart1(ranges: List<IdRange>): ULong {
     val invalidIds = mutableSetOf<ULong>()
-    // 95 - 101
-    //
-    // 95.length % 2 == 0 => 95.substring(0, 95.length()) = 9
-    // 9.duplicate = 99
-    // 99 >= start && 99 <= end ?   +1
-    //
-    // 998-1012
-    //
-    // 998.length % 2 != 0
-    // 998.length + 1 = 4 => 1000 => 1000.substring(0, 1000.length()) = 10
-    // 10.duplicate = 1010
-    // 1010 >= start && 1010 <= end ?   +1
-    // 11.duplicate = 1111
-    // 11111 >= start && 1111 <= end ?   FALSE
-    //
-    // 11-22
-    //
-    // 800 - 10000
-    // 900.length %2 != 0
-    // 900.length + 1 = 4 => 1000 => 1000.substring(0, 1000.length()) = 10
-    // 10.duplicate = 1010
-    // 1010 >= start && 1010 <= end ?   +1
-    // 11.duplicate = 1111
-    // 1111 >= start && 1111 <= end ?   +1
-    // 12 ...  +1
-    // 13 ... +1
-    // 14 ... +1
-    // ...
-    // 99 ... +1
-    // 100.duplicate = 100100
-    // 100100 >= start && 100100 <= end ?  FALSE
-    //
-    //
-    // For each IdRange:
-    //
-    // seed = if start.length() %2 == 0
-    //     getFirstHalf(start)
-    // else
-    //     getFirstHalf(generateMinNumber(start.length() + 1)) // 1...0
-    // v = seed.duplicate()
-    // loop
-    //     if v <= end
-    //         if v >= start
-    //             COUNT++
-    //         seed = safe_add(v, 1)
-    //         continue
-    //     else
-    //         break
     for (r in ranges) {
-        println("checking range: $r")
         var seed: String =
-                when (r.start.length % 2 == 0) {
-                    true -> getFirstHalf(r.start)
-                    false -> getFirstHalf(generateNextLevelMinNumber(r.start))
-                }
+            when (r.start.length % 2 == 0) {
+                true -> getFirstNChars(r.start, r.start.length / 2)
+                false ->
+                    getFirstNChars(
+                        generateNextLevelMinNumber(r.start.length),
+                        r.start.length / 2
+                    )
+            }
         while (true) {
             val value = seed.repeat(2)
             if (value.notGreaterThan(r.end)) {
                 if (value.notLessThan(r.start)) {
                     invalidIds.add(value.toULong())
-                    println("hit=${value.toULong()}")
+                    // println("hit=${value.toULong()}")
                 }
                 seed = safeAdd1(seed.toCharArray().toList()).joinToString("")
-                println("new seed=$seed")
+                // println("new seed=$seed")
                 continue
-            } else {
-                break
             }
+
+            break
         }
     }
-    println("invalidIds=$invalidIds")
+    // println("invalidIds=$invalidIds")
+    return invalidIds.sum()
+}
+
+fun solvePart2(ranges: List<IdRange>): ULong {
+    val invalidIds = mutableSetOf<ULong>()
+
+    fun isStringRepeated(s: String): Boolean {
+        val len = s.length
+        val possibleSeedLength = when (len) {
+            1 -> listOf(1)
+            2 -> listOf(1)
+            3 -> listOf(1)
+            4 -> listOf(1, 2)
+            5 -> listOf(1)
+            6 -> listOf(1, 2, 3)
+            7 -> listOf(1)
+            8 -> listOf(1, 2, 4)
+            9 -> listOf(1, 3)
+            10 -> listOf(1, 2, 5)
+            11 -> listOf(1)
+            12 -> listOf(1, 2, 3, 4, 6)
+            13 -> listOf(1)
+            14 -> listOf(1, 2, 7)
+            15 -> listOf(1, 3, 5)
+            16 -> listOf(1, 2, 4, 8)
+            else -> throw Exception("target string too long")
+        }
+
+        for (seedLen in possibleSeedLength) {
+            val times = len / seedLen
+            if (times == 1) {
+                continue
+            }
+            val seed = s.subSequence(0, seedLen)
+            if ((1..times).toList().map { it * seedLen }.windowed(2, 1).all { s.substring(it[0], it[1]) == seed }
+            ) {
+                return true
+            }
+        }
+        return false
+    }
+
+
+    for (r in ranges) {
+        var target = r.start;
+        while (true) {
+            if (target.greaterThan(r.end)) {
+                break
+            }
+            if (isStringRepeated(target)) {
+                invalidIds.add(target.toULong())
+            }
+            target = safeAdd1(target.toCharArray().toList()).joinToString("")
+        }
+    }
+
     return invalidIds.sum()
 }
 
@@ -167,4 +201,8 @@ fun main() {
     // 29940925364 too high.
     // 29940924880 <- use mutableSetOf, instead of mutableListOf to remove duplicate ids.
     println("part1: ${solvePart1(ranges)}")
+    // 30092076142 too low.
+    // 29940924869
+    // 48631959042
+    println("part2: ${solvePart2(ranges)}")
 }
