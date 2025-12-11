@@ -1,4 +1,4 @@
-package kzs.th000
+package aoc.day02
 
 enum class Ordering {
     LESS,
@@ -195,7 +195,7 @@ fun solvePart2(ranges: List<IdRange>): ULong {
 }
 
 fun main() {
-    val ranges = AocUtils.readInput(2).split(",").map { IdRange.parseText(it) }.toList()
+    val ranges = aoc.Utils.readInput(2).split(",").map { IdRange.parseText(it) }.toList()
     // 17931620893 too low.
     // 17931620992 too low.
     // 29940925364 too high.

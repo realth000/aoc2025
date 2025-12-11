@@ -1,4 +1,4 @@
-package kzs.th000
+package aoc.day01
 
 enum class Direction {
     UP,
@@ -90,7 +90,7 @@ fun solvePart2(rotations: List<Rotation>): UInt {
 }
 
 fun main() {
-    val rotations = AocUtils.readInput(1).split("\n").map { Rotation.parseText(it) }.toList()
+    val rotations = aoc.Utils.readInput(1).split("\n").map { Rotation.parseText(it) }.toList()
     val count1 = solvePart1(rotations)
     println(count1)
     val count2 = solvePart2(rotations)

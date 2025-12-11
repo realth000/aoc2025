@@ -1,6 +1,5 @@
-import kzs.th000.Rotation
-import kzs.th000.solvePart1
-import kzs.th000.solvePart2
+package aoc.day01
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -19,7 +18,7 @@ val DUMMY_INPUT = """
 
 class Day01Test {
     @Test
-    fun dummyTest() {
+    fun solveTest() {
         val rotations = DUMMY_INPUT.split("\n").map { Rotation.parseText(it) }.toList()
         assertEquals(3, solvePart1(rotations))
         assertEquals(6u, solvePart2(rotations))

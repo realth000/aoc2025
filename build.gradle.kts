@@ -31,7 +31,7 @@ kotlin {
 
     tasks.register<JavaExec>("day$dayId") {
         classpath = sourceSets.main.get().runtimeClasspath
-        mainClass.set("kzs.th000.Day${dayId}Kt")
-        group = "Days"
+        mainClass.set("aoc.day${dayId}.Day${dayId}Kt")
+        group = "AOC"
     }
 }
