@@ -11,7 +11,7 @@ class Day03Test {
         val banks = DUMMY_INPUT.split("\n").map { Bank.parseText(it) }.toList()
         assertEquals(357, solvePart1(banks))
         assertEquals(357_uL, solvePart2(banks, 2))
-        // assertEquals(3121910778619_uL, solvePart2(banks))
+        assertEquals(3121910778619_uL, solvePart2(banks, 12))
     }
 }
 

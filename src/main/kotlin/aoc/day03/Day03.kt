@@ -58,45 +58,6 @@ fun solvePart1(banks: List<Bank>): Int {
 }
 
 fun solvePart2(banks: List<Bank>, size: Int): ULong {
-    fun getIncreasingSeqLength(arr: Array<Int?>, incoming: Int): Int {
-        val w = arr.toList().windowed(2, 1).reversed()
-        var count = 0;
-        for ((prev, next) in w) {
-            if (prev!! < next!! && next < incoming) {
-                count += 1
-            } else {
-                break
-            }
-        }
-        return count
-    }
-
-    fun Array<Int?>.partialShiftLeft(step: Int, incoming: Int) {
-        val step = if (step > this.size) {
-            this.size
-        } else {
-            step
-        }
-        // [x, x, x, x , x]
-        // step = 1, incoming = 100
-        // [x, x, x, x, 100]
-        var shiftCurrIdx = this.size - step
-        while (true) {
-            if (shiftCurrIdx < this.size - 1) {
-                // Has next.
-                this[shiftCurrIdx] = this[shiftCurrIdx + 1]
-                shiftCurrIdx += 1
-            } else if (shiftCurrIdx == this.size - 1) {
-                // At the end of array.
-                this[shiftCurrIdx] = incoming
-                break
-            } else {
-                // Out of range.
-                throw Exception("Unreachable")
-            }
-        }
-    }
-
     fun maxJoltage(bank: Bank, size: Int): ULong {
         var hs = Array<Int?>(size) { null }
         for (i in bank.batteries) {
@@ -106,28 +67,33 @@ fun solvePart2(banks: List<Bank>, size: Int): ULong {
                 continue
             }
 
-            // [1, 2, 5, 4, 3] 6
-            // -> ? [1, 2, 5, 4, 6]
-
             // All hs not null since here.
 
-            // How many elements at tail need to shift left.
-            val seqShiftLength = getIncreasingSeqLength(hs, i)
-            println("hs=${hs.contentToString()} , seqShiftLength=$seqShiftLength")
-
-            if (hs.last()!! >= i && seqShiftLength < 1) {
-                continue
+            // Check and shift left.
+            var shiftCount: Int? = null
+            var p = 0
+            while (p < size - 1) {
+                if (hs[p]!! < hs[p + 1]!!) {
+                    shiftCount = p
+                    break
+                }
+                p += 1
             }
 
-            println(">>> shift: $seqShiftLength for i=$i")
-            if (seqShiftLength > 0) {
-                println(">>> shift? ${hs.contentToString()}")
-                hs.partialShiftLeft(seqShiftLength, i)
-                println(">>> shift! ${hs.contentToString()}")
+            if (hs.last()!! < i || shiftCount != null) {
+                // Shift left.
+                if (shiftCount != null) {
+                    var pos = shiftCount
+                    while (pos <= size - 2) {
+                        hs[pos] = hs[pos + 1]
+                        pos += 1
+                    }
+                }
+
+                hs[size - 1] = i
             }
         }
 
-        println(">>> jolt!: ${hs.contentToString()}")
         return hs.filterNotNull().reversed()
             .mapIndexed { idx: Int, value: Int -> value.toULong() * 10.toDouble().pow(idx).toULong() }.sum()
     }
@@ -138,4 +104,5 @@ fun solvePart2(banks: List<Bank>, size: Int): ULong {
 fun main() {
     val banks = aoc.Utils.readInput(3).split("\n").map { Bank.parseText(it) }.toList()
     println("part1: ${solvePart1(banks)}")
+    println("part2: ${solvePart2(banks, 12)}")
 }
