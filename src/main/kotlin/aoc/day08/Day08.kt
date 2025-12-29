@@ -126,7 +126,7 @@ fun solvePart2(points: List<Point>, round: Int): ULong {
 
     val unionFind = UnionFind(points)
     var connectionsCount = 0
-    var lastDistance : Distance? = null
+    var lastDistance: Distance? = null
 
     for (d in distances) {
         if (connectionsCount >= round) {
@@ -137,7 +137,7 @@ fun solvePart2(points: List<Point>, round: Int): ULong {
         }
     }
 
-    return lastDistance!!.p1.x.toULong() * lastDistance!!.p2.x.toULong()
+    return lastDistance!!.p1.x * lastDistance.p2.x
 }
 
 fun main() {
