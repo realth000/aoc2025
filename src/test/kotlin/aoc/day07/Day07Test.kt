@@ -27,7 +27,7 @@ class DayTest {
     fun solveTest() {
         val world = World.parseText(DUMMY_INPUT)
         assertEquals(21, solvePart1(world))
-        assertEquals(40, solvePart2(world))
+        assertEquals(40_uL, solvePart2(world))
     }
 
 }
