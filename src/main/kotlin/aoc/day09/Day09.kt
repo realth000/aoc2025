@@ -23,6 +23,15 @@ fun <T> generatePairs(items: List<T>): List<Pair<T, T>> {
     return pairs
 }
 
+fun <T> generateBorders(items: List<T>): List<Pair<T, T>> {
+    val pairs = mutableListOf<Pair<T, T>>()
+    for (i in 0..(items.size - 2)) {
+        pairs.add(items[i] to items[i + 1])
+    }
+    pairs.add(items.last() to items[0])
+    return pairs
+}
+
 fun solvePart1(points: List<Point>): Long =
     generatePairs(points).map { (p1, p2) -> Point.calcArea(p1, p2) }.maxOf { it }
 
@@ -49,19 +58,16 @@ fun solvePart1(points: List<Point>): Long =
  */
 fun solvePart2(points: List<Point>): Long {
     val pairs = generatePairs(points)
+    val borders = generateBorders(points)
     fun filterRedGreenRegtangles(pointPair: Pair<Point, Point>): Boolean {
         val horizontalLinesMap = buildMap<Long, List<Pair<Long, Long>>> {
-            pairs
+            borders
                 .filter { it.first.y == it.second.y }
                 .groupBy { it.first.y }
                 .map { entry ->
                     val lines = entry
                         .value
-                        .withIndex()
-                        .partition { (index, _) -> index % 2 == 0 }
-                        .first
-                        .toList()
-                        .map { (_, line) ->
+                        .map { line ->
                             if (line.first.x <= line.second.x) {
                                 line.first.x to line.second.x
                             } else {
@@ -73,17 +79,13 @@ fun solvePart2(points: List<Point>): Long {
         }
 
         val verticalLinesMap = buildMap<Long, List<Pair<Long, Long>>> {
-            pairs
+            borders
                 .filter { it.first.x == it.second.x }
                 .groupBy { it.first.x }
                 .map { entry ->
                     val lines = entry
                         .value
-                        .withIndex()
-                        .partition { (index, _) -> index % 2 == 0 }
-                        .first
-                        .toList()
-                        .map { (_, line) ->
+                        .map { line ->
                             if (line.first.y <= line.second.y) {
                                 line.first.y to line.second.y
                             } else {
@@ -101,25 +103,21 @@ fun solvePart2(points: List<Point>): Long {
 
             // Check vertical direction:
             val currVerticalLines = verticalLinesMap[p.x]
-            if (currVerticalLines != null && currVerticalLines.any { it.first < p.y && p.y < it.second }) {
+            if (currVerticalLines != null && currVerticalLines.any { it.first <= p.y && p.y < it.second }) {
                 // In line.
                 return true
             }
-            val (leftLines, rightLines) = verticalLinesMap.entries.partition { it.key < p.x }
-            if (leftLines.any { l -> l.value.any { it.first <= p.y && p.y <= it.second } }
-                && rightLines.any { l -> l.value.any { it.first <= p.y && p.y <= it.second } }) {
+
+            // Count the lines that interset with the point, if the sum is even, then point is inside the polygon.
+            if (verticalLinesMap.entries.filter { it.key > p.x }
+                    .count { l -> l.value.any { it.first <= p.y && p.y < it.second } } % 2 == 1) {
                 return true
             }
 
             // Check horizontal direction:
             val currHorizontalLines = horizontalLinesMap[p.y]
-            if (currHorizontalLines != null && currHorizontalLines.any { it.first < p.x && p.x < it.second }) {
+            if (currHorizontalLines != null && currHorizontalLines.any { it.first <= p.x && p.x < it.second }) {
                 // In line.
-                return true
-            }
-            val (topLines, bottomLines) = horizontalLinesMap.entries.partition { it.key < p.y }
-            if (topLines.any { l -> l.value.any { it.first <= p.x && p.x <= it.second } }
-                && bottomLines.any { l -> l.value.any { it.first <= p.x && p.x <= it.second } }) {
                 return true
             }
 
@@ -131,11 +129,8 @@ fun solvePart2(points: List<Point>): Long {
             .all { isPointGreenOrReg(it) }
     }
 
-    return pairs.filter { filterRedGreenRegtangles(it) }.map { (p1, p2) ->
-        val area = Point.calcArea(p1, p2)
-        println(">>> p1=$p1, p2=$p2, area=$area")
-        area
-    }.maxOf { it }
+    return pairs.filter { (p1, p2) -> p1.x != p2.x && p1.y != p2.y && filterRedGreenRegtangles(p1 to p2) }
+        .map { (p1, p2) -> Point.calcArea(p1, p2) }.maxOf { it }
 }
 
 fun main() {
