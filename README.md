@@ -23,6 +23,7 @@ Solutions written in Kotlin with no 3rd-party dependency.
 
 * √ Passed.
 * × Not passed.
+* / Skipped (mathematical question).
 
 | Date   | Status    |
 |--------|-----------|
@@ -35,3 +36,4 @@ Solutions written in Kotlin with no 3rd-party dependency.
 | Day 07 | P1 √ P2 √ |
 | Day 08 | P1 √ P2 √ |
 | Day 09 | P1 √ P2 × |
+| Day 10 | P1 √ P2 / |
